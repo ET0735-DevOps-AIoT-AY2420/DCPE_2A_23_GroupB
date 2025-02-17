@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuperStore - Online Grocery Shopping</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="top-header">
+        <div class="header-controls">
+            <div class="location-picker">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Enter your address or postal code</span>
+            </div>
+            <div class="user-controls">
+                <i class="fas fa-user"></i>
+                <span>Login/Sign up</span>
+                <i class="fas fa-question-circle"></i>
+                <span>Help Centre</span>
+            </div>
+        </div>
+        <div class="main-header">
+            <a href="/" class="logo">SuperStore</a>
+            <ul class="nav-categories">
+                <li><a href="#">Categories</a></li>
+                <li><a href="#">Promotions</a></li>
+                <li><a href="#">Shopping Lists</a></li>
+                <li><a href="#">Food & Wellness</a></li>
+                <li><a href="#">More</a></li>
+            </ul>
+            <div class="search-bar">
+                <input type="text" placeholder="Up to 40% OFF rice, milk, paper & more">
+            </div>
+            <button class="cart-button">
+                <i class="fas fa-shopping-cart"></i>
+                <span>Cart</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="carousel">
+        <div class="carousel-inner">
+            <div class="carousel-item">
+                <div class="carousel-content">
+                    <h2>Beauty & Wellness Deals</h2>
+                    <p>Up to 64% OFF</p>
+                    <button class="shop-now">Shop now</button>
+                </div>
+                <div class="carousel-image">
+                    <!-- Placeholder for product images -->
+                </div>
+            </div>
+        </div>
+        <div class="carousel-controls">
+            <button class="prev"><i class="fas fa-chevron-left"></i></button>
+            <button class="next"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <section class="flash-deals">
+        <div class="section-header">
+            <h2>Flash deals</h2>
+            <div class="timer">
+                <span>Promo ends in</span>
+                <div class="timer-box">04</div>
+                <div class="timer-box">46</div>
+                <div class="timer-box">34</div>
+            </div>
+            <a href="#">See all</a>
+        </div>
+
+        <div class="product-grid">
+            <!-- Product Card Template -->
+            <div class="product-card">
+                <span class="flash-deal-tag">Flash Deal</span>
+                <button class="favorite-button">
+                    <i class="far fa-heart"></i>
+                </button>
+                <img src="/api/placeholder/200/200" alt="Product" class="product-image">
+                <div class="product-info">
+                    <h3>Wolf Blass Red Label Red Wine - Shiraz Cabernet</h3>
+                    <div class="product-price">$18.90</div>
+                    <div class="product-original-price">$27.00</div>
+                    <button class="add-to-cart">Add to cart</button>
+                </div>
+            </div>
+            <!-- More product cards can be added here -->
+        </div>
+    </section>
+
+    <script>
+        // Carousel functionality
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-item');
+        const prevButton = document.querySelector('.prev');
+        const nextButton = document.querySelector('.next');
+
+        function updateSlide() {
+            const carousel = document.querySelector('.carousel-inner');
+            carousel.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }
+
+        prevButton.addEventListener('click', () => {
+            currentSlide = Math.max(currentSlide - 1, 0);
+            updateSlide();
+        });
+
+        nextButton.addEventListener('click', () => {
+            currentSlide = Math.min(currentSlide + 1, slides.length - 1);
+            updateSlide();
+        });
+
+        // Favorite button functionality
+        const favoriteButtons = document.querySelectorAll('.favorite-button');
+        favoriteButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const icon = button.querySelector('i');
+                icon.classList.toggle('fas');
+                icon.classList.toggle('far');
+            });
+        });
+    </script>
+</body>
+</html>
