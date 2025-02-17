@@ -24,13 +24,41 @@
         </div>
         <div class="main-header">
             <a href="/" class="logo">SuperStore</a>
-            <ul class="nav-categories">
-                <li><a href="#">Categories</a></li>
-                <li><a href="#">Promotions</a></li>
-                <li><a href="#">Shopping Lists</a></li>
-                <li><a href="#">Food & Wellness</a></li>
-                <li><a href="#">More</a></li>
-            </ul>
+            <nav class="main-nav">
+                <ul class="nav-categories">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-trigger">Categories</a>
+                        <div class="dropdown-content">
+                            <ul class="category-list">
+                                <li><a href="#" data-category="hari-raya">Hari Raya</a></li>
+                                <li><a href="#" data-category="international">International Selections</a></li>
+                                <li><a href="#" data-category="baby-toys">Baby, Child & Toys</a></li>
+                                <li><a href="#" data-category="bakery">Bakery</a></li>
+                                <li><a href="#" data-category="beauty">Beauty & Personal Care</a></li>
+                                <li><a href="#" data-category="dairy">Dairy, Chilled & Eggs</a></li>
+                                <li><a href="#" data-category="drinks">Drinks</a></li>
+                                <li><a href="#" data-category="alcohol">Beer, Wine & Spirits</a></li>
+                                <li><a href="#" data-category="cupboard">Food Cupboard</a></li>
+                                <li><a href="#" data-category="frozen">Frozen</a></li>
+                                <li><a href="#" data-category="fruits">Fruits & Vegetables</a></li>
+                                <li><a href="#" data-category="health">Health & Wellness</a></li>
+                                <li><a href="#" data-category="housebrand">Housebrand</a></li>
+                                <li><a href="#" data-category="household">Household</a></li>
+                                <li><a href="#" data-category="meat">Meat & Seafood</a></li>
+                                <li><a href="#" data-category="pet">Pet Supplies</a></li>
+                                <li><a href="#" data-category="rice">Rice, Noodles & Cooking Ingredients</a></li>
+                                <li><a href="#" data-category="snacks">Snacks & Confectionery</a></li>
+                                <li><a href="#" data-category="lifestyle">Lifestyle</a></li>
+                                <li><a href="#" data-category="electronics">Electronics</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li><a href="#">Promotions</a></li>
+                    <li><a href="#">Shopping Lists</a></li>
+                    <li><a href="#">Food & Wellness</a></li>
+                    <li><a href="#">More</a></li>
+                </ul>
+            </nav>
             <div class="search-bar">
                 <input type="text" placeholder="Up to 40% OFF rice, milk, paper & more">
             </div>
@@ -72,17 +100,69 @@
             <a href="#">See all</a>
         </div>
 
-        <div class="category-filter">
-            <button class="filter-btn active" data-category="all">All Categories</button>
-            <button class="filter-btn" data-category="beverages">Beverages</button>
-            <button class="filter-btn" data-category="groceries">Groceries</button>
-            <button class="filter-btn" data-category="household">Household</button>
-            <button class="filter-btn" data-category="personal-care">Personal Care</button>
+        <div class="category-section">
+            <!-- Main category buttons -->
+            <div class="category-filter">
+                <button class="filter-btn active" data-category="all">All Categories</button>
+                <button class="filter-btn" data-category="fruits">Fruits</button>
+                <button class="filter-btn" data-category="vegetables">Vegetables</button>
+                <button class="filter-btn" data-category="meat">Meat</button>
+                <button class="filter-btn" data-category="seafood">Seafood</button>
+                <button class="filter-btn" data-category="dairy">Dairy</button>
+                <button class="filter-btn" data-category="bakery">Bakery</button>
+                <button class="filter-btn" data-category="beverages">Beverages</button>
+                <button class="filter-btn" data-category="frozen">Frozen Foods</button>
+                <button class="filter-btn" data-category="pantry">Pantry Staples</button>
+                <button class="filter-btn" data-category="snacks">Snacks</button>
+                <button class="filter-btn" data-category="household">Household Supplies</button>
+                <button class="filter-btn" data-category="personal-care">Personal Care</button>
+                <button class="filter-btn" data-category="baby">Baby Products</button>
+                <button class="filter-btn" data-category="pet">Pet Supplies</button>
+            </div>
+
+            <!-- Subcategory container -->
+            <div class="subcategory-container">
+                <!-- Fruits subcategories -->
+                <div class="subcategory-group" data-parent="fruits">
+                    <button class="subcategory-btn" data-subcategory="apples">Apples</button>
+                    <button class="subcategory-btn" data-subcategory="bananas">Bananas</button>
+                    <button class="subcategory-btn" data-subcategory="berries">Berries</button>
+                    <button class="subcategory-btn" data-subcategory="citrus">Citrus</button>
+                    <button class="subcategory-btn" data-subcategory="grapes">Grapes</button>
+                    <button class="subcategory-btn" data-subcategory="tropical">Tropical Fruits</button>
+                </div>
+
+                <!-- Vegetables subcategories -->
+                <div class="subcategory-group" data-parent="vegetables">
+                    <button class="subcategory-btn" data-subcategory="leafy-greens">Leafy Greens</button>
+                    <button class="subcategory-btn" data-subcategory="root-vegetables">Root Vegetables</button>
+                    <button class="subcategory-btn" data-subcategory="peppers">Peppers</button>
+                    <button class="subcategory-btn" data-subcategory="tomatoes">Tomatoes</button>
+                    <button class="subcategory-btn" data-subcategory="onions">Onions</button>
+                </div>
+
+                <!-- Meat subcategories -->
+                <div class="subcategory-group" data-parent="meat">
+                    <button class="subcategory-btn" data-subcategory="beef">Beef</button>
+                    <button class="subcategory-btn" data-subcategory="chicken">Chicken</button>
+                    <button class="subcategory-btn" data-subcategory="pork">Pork</button>
+                    <button class="subcategory-btn" data-subcategory="lamb">Lamb</button>
+                    <button class="subcategory-btn" data-subcategory="processed">Processed Meats</button>
+                </div>
+
+                <!-- Seafood subcategories -->
+                <div class="subcategory-group" data-parent="seafood">
+                    <button class="subcategory-btn" data-subcategory="fish">Fish</button>
+                    <button class="subcategory-btn" data-subcategory="shrimp">Shrimp</button>
+                    <button class="subcategory-btn" data-subcategory="crab">Crab</button>
+                    <button class="subcategory-btn" data-subcategory="shellfish">Shellfish</button>
+                </div>
+            </div>
         </div>
 
         <div class="product-grid">
             <!-- Wine Product -->
-            <div class="product-card" data-category="beverages" data-product-id="wine1">
+            <div class="product-card" data-category="beverages" data-subcategory="wine">
                 <span class="flash-deal-tag">Flash Deal</span>
                 <span class="category-tag">Beverages</span>
                 <button class="favorite-button">
@@ -93,54 +173,6 @@
                     <h3>Wolf Blass Red Label Red Wine - Shiraz Cabernet</h3>
                     <div class="product-price">$18.90</div>
                     <div class="product-original-price">$27.00</div>
-                    <button class="add-to-cart">Add to cart</button>
-                </div>
-            </div>
-
-            <!-- Coffee Product -->
-            <div class="product-card" data-category="beverages" data-product-id="coffee1">
-                <span class="flash-deal-tag">Flash Deal</span>
-                <span class="category-tag">Beverages</span>
-                <button class="favorite-button">
-                    <i class="far fa-heart"></i>
-                </button>
-                <img src="/api/placeholder/200/200" alt="Coffee" class="product-image">
-                <div class="product-info">
-                    <h3>Nescafe Instant Coffee - Premium Blend</h3>
-                    <div class="product-price">$5.95</div>
-                    <div class="product-original-price">$7.70</div>
-                    <button class="add-to-cart">Add to cart</button>
-                </div>
-            </div>
-
-            <!-- Kitchen Towel Product -->
-            <div class="product-card" data-category="household" data-product-id="towel1">
-                <span class="flash-deal-tag">Flash Deal</span>
-                <span class="category-tag">Household</span>
-                <button class="favorite-button">
-                    <i class="far fa-heart"></i>
-                </button>
-                <img src="/api/placeholder/200/200" alt="Kitchen Towel" class="product-image">
-                <div class="product-info">
-                    <h3>Premium Kitchen Towel</h3>
-                    <div class="product-price">$5.85</div>
-                    <div class="product-original-price">$7.00</div>
-                    <button class="add-to-cart">Add to cart</button>
-                </div>
-            </div>
-
-            <!-- Chocolate Drink Product -->
-            <div class="product-card" data-category="beverages" data-product-id="milo1">
-                <span class="flash-deal-tag">Flash Deal</span>
-                <span class="category-tag">Beverages</span>
-                <button class="favorite-button">
-                    <i class="far fa-heart"></i>
-                </button>
-                <img src="/api/placeholder/200/200" alt="Chocolate Drink" class="product-image">
-                <div class="product-info">
-                    <h3>Milo Chocolate Malt Drink UHT</h3>
-                    <div class="product-price">$12.50</div>
-                    <div class="product-original-price">$14.93</div>
                     <button class="add-to-cart">Add to cart</button>
                 </div>
             </div>
