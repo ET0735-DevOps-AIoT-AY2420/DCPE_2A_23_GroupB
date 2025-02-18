@@ -1,56 +1,64 @@
-from picamera2 import Picamera2, Preview
-from pyzbar.pyzbar import decode
-from PIL import Image
-import numpy as np
 import time
+from picamera2 import Picamera2
+from pyzbar.pyzbar import decode
+import cv2
 
-def process_frame(frame):
+def start_qr_code_scanner(scan_time=20):
     """
-    Decode QR codes from a single frame.
+    Scans QR codes from the camera and returns the first detected code.
+    :param scan_time: Time limit in seconds before stopping the scan.
+    :return: Decoded QR code data or None if no QR code is detected.
     """
-    img = Image.fromarray(frame)  # Convert NumPy array to PIL Image
-    decoded_objects = decode(img)
-    for obj in decoded_objects:
-        print(f"QR Code Type: {obj.type}, Data: {obj.data.decode('utf-8')}")
-        return obj.data.decode("utf-8")  # Return the first decoded QR code
-    return None
-
-def start_qr_code_scanner():
-    """
-    Starts the QR code scanner with a live camera preview.
-    """
-    print("Initializing camera...")
+    print("Initializing camera for QR scanning...")
+    
     picam2 = Picamera2()
+    video_config = picam2.create_video_configuration(main={"size": (640, 480)})
+    picam2.configure(video_config)
+    
+    scanning = True
+    start_time = time.time()
+    qr_data = None
 
-    # Configure the camera for preview and processing
-    camera_config = picam2.create_preview_configuration(main={"size": (320, 240)})
-    picam2.configure(camera_config)
-
-    # Start the camera with a preview
-    picam2.start_preview(Preview.QTGL)  # QTGL provides a hardware-accelerated preview window
+    # Start the camera
     picam2.start()
-    time.sleep(2)  # Allow the camera to stabilize
-
-    print("Camera started. Scanning for QR codes...")
+    
     try:
-        while True:
-            # Capture a frame as a NumPy array
+        while scanning:
+            # Capture a frame
             frame = picam2.capture_array()
 
-            # Process the frame for QR codes
-            qr_data = process_frame(frame)
-            if qr_data:
-                print(f"Decoded QR Code: {qr_data}")
-                break  # Stop scanning once a QR code is decoded
+            # Convert frame to grayscale for better processing
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Detect QR codes in the frame
+            codes = decode(gray)
+
+            for code in codes:
+                qr_data = code.data.decode("utf-8")
+                print(f"QR Code Detected: {qr_data}")
+                scanning = False  # Stop scanning once a QR code is found
+                break
+
+            # Stop scanning if the time limit is exceeded
+            if time.time() - start_time > scan_time:
+                print("Scanning time exceeded!")
+                scanning = False
 
             time.sleep(0.1)  # Reduce CPU usage
 
     except KeyboardInterrupt:
-        print("\nQR code scanner stopped.")
+        print("\nQR code scanner stopped manually.")
+
     finally:
-        picam2.stop_preview()
         picam2.stop()
+        picam2.close()
         print("Camera stopped.")
 
+    return qr_data
+
 if __name__ == "__main__":
-    start_qr_code_scanner()
+    scanned_data = scan_qr_code(scan_time=20)
+    if scanned_data:
+        print(f"Decoded QR Code: {scanned_data}")
+    else:
+        print("No QR Code detected.")
