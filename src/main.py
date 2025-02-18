@@ -15,7 +15,6 @@ from hal import hal_dc_motor as dc_motor
 # Import functional modules
 from barcode_scanner import start_barcode_scanner
 from QRcode_scanner import start_qr_code_scanner
-from payment_processor import process_payment
 
 # Shared queue for keypad presses
 shared_keypad_queue = queue.Queue()
@@ -23,6 +22,34 @@ shared_keypad_queue = queue.Queue()
 # Callback function invoked when a key is pressed
 def key_pressed(key):
     shared_keypad_queue.put(key)
+
+def process_payment(lcd, buzzer, rfid_reader):
+    """Handles payment using RFID only (No PIN fallback)."""
+    lcd.lcd_clear()
+    lcd.lcd_display_string("Scan RFID", 1)
+    time.sleep(2)
+
+    # Initialize RFID reader and scan for a card
+    reader = rfid_reader.init()
+    rfid_id = reader.read_id_no_block()
+
+    if rfid_id:
+        rfid_id_str = str(rfid_id).strip()  # Convert to string & remove spaces
+        buzzer.beep(0.5, 0.2, 1)
+        print(f"RFID Scanned: {rfid_id_str}")  # Debugging
+        lcd.lcd_clear()
+        lcd.lcd_display_string("Payment Approved", 1)
+        time.sleep(10)
+        return True  # Payment Successful
+
+    # If no RFID is detected
+    lcd.lcd_clear()
+    lcd.lcd_display_string("Payment Failed!", 1)
+    buzzer.beep(0.5, 0.2, 2)
+    time.sleep(2)
+    return False
+
+
 
 def main():
     # Initialize hardware components
@@ -55,7 +82,7 @@ def main():
         lcd.lcd_clear()
         lcd.lcd_display_string("Select an Option", 1)
         print("Waiting for key press...")
-        
+
         keyvalue = shared_keypad_queue.get()
         print(f"Key Pressed: {keyvalue}")
 
@@ -73,8 +100,8 @@ def main():
 
         elif keyvalue == 3:
             lcd.lcd_display_string("Processing Payment...", 1)
-            payment_status = process_payment()
-            lcd.lcd_display_string("Payment Successful" if payment_status else "Payment Failed!", 2)
+            payment_status = process_payment(lcd, buzzer, rfid_reader)
+            lcd.lcd_display_string("Payment Success" if payment_status else "PaymentFailed!", 2)
             time.sleep(2)
 
         elif keyvalue == 4:
@@ -106,3 +133,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
