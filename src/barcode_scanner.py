@@ -1,56 +1,64 @@
-from picamera2 import Picamera2, Preview
-from pyzbar.pyzbar import decode
-from PIL import Image
-import numpy as np
 import time
+from picamera2 import Picamera2
+from pyzbar.pyzbar import decode
+import cv2
 
-def process_frame(frame):
+def start_barcode_scanner(scan_time=20):
     """
-    Decode barcodes from a single frame.
+    Scans barcodes from the camera and returns the first detected barcode.
+    :param scan_time: Time limit in seconds before stopping the scan.
+    :return: Decoded barcode data or None if no barcode is detected.
     """
-    img = Image.fromarray(frame)  # Convert NumPy array to PIL Image
-    decoded_objects = decode(img)
-    for obj in decoded_objects:
-        print(f"Barcode Type: {obj.type}, Data: {obj.data.decode('utf-8')}")
-        return obj.data.decode("utf-8")  # Return the first decoded barcode
-    return None
+    print("📸 Initializing camera for barcode scanning...")
 
-def start_barcode_scanner():
-    """
-    Starts the barcode scanner with a live camera preview.
-    """
-    print("Initializing camera...")
     picam2 = Picamera2()
+    video_config = picam2.create_video_configuration(main={"size": (640, 480)})
+    picam2.configure(video_config)
 
-    # Configure the camera for preview and processing
-    camera_config = picam2.create_preview_configuration(main={"size": (320, 240)})
-    picam2.configure(camera_config)
+    scanning = True
+    start_time = time.time()
+    barcode_data = None
 
-    # Start the camera with a preview
-    picam2.start_preview(Preview.QTGL)  # QTGL provides a hardware-accelerated preview window
+    # Start the camera
     picam2.start()
-    time.sleep(2)  # Allow the camera to stabilize
 
-    print("Camera started. Scanning for barcodes...")
     try:
-        while True:
-            # Capture a frame as a NumPy array
+        while scanning:
+            # Capture a frame
             frame = picam2.capture_array()
 
-            # Process the frame for barcodes
-            barcode_data = process_frame(frame)
-            if barcode_data:
-                print(f"Decoded Barcode: {barcode_data}")
-                break  # Stop scanning once a barcode is decoded
+            # Convert frame to grayscale for better processing
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Detect barcodes in the frame
+            codes = decode(gray)
+
+            for code in codes:
+                barcode_data = code.data.decode("utf-8")
+                print(f"✅ Barcode Detected: {barcode_data}")
+                scanning = False  # Stop scanning once a barcode is found
+                break
+
+            # Stop scanning if the time limit is exceeded
+            if time.time() - start_time > scan_time:
+                print("⏳ Scanning time exceeded!")
+                scanning = False
 
             time.sleep(0.1)  # Reduce CPU usage
 
     except KeyboardInterrupt:
-        print("\nBarcode scanner stopped.")
+        print("\n🚫 Barcode scanner stopped manually.")
+
     finally:
-        picam2.stop_preview()
         picam2.stop()
-        print("Camera stopped.")
+        picam2.close()
+        print("📸 Camera stopped.")
+
+    return barcode_data
 
 if __name__ == "__main__":
-    start_barcode_scanner()
+    scanned_data = start_barcode_scanner(scan_time=20)
+    if scanned_data:
+        print(f"✅ Decoded Barcode: {scanned_data}")
+    else:
+        print("⚠️ No Barcode detected.")
