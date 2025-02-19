@@ -57,7 +57,7 @@ def start_qr_code_scanner(scan_time=20):
     return qr_data
 
 if __name__ == "__main__":
-    scanned_data = scan_qr_code(scan_time=20)
+    scanned_data = start_qr_code_scanner(scan_time=20)
     if scanned_data:
         print(f"Decoded QR Code: {scanned_data}")
     else:
