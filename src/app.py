@@ -86,27 +86,36 @@ def add_to_cart():
 
 def process_pin_payment():
     GPIO.setmode(GPIO.BCM)  # Ensure GPIO mode is set
-    GPIO.setup(18, GPIO.OUT)  # Ensure buzzer pin is set
+    GPIO.setup(18, GPIO.OUT)  # Ensure buzzer pin is set 
     lcd = LCD.lcd()
     lcd.lcd_clear()
-    lcd.lcd_display_string("Enter PIN", 1)
+    lcd.lcd_display_string("Enter PIN:", 1)
+    entered_pin = ""
+
+    while len(entered_pin) < 4:
+        key = request.get_json().get("pin_digit")
+        if not key:
+            return False  # Invalid input
+
+        entered_pin += str(key)
+        lcd.lcd_display_string("*" * len(entered_pin), 2)
+
+        time.sleep(5)  # Simulate real-time input
+
+    lcd.lcd_display_string("Processing...", 1)
     time.sleep(5)
 
-    entered_pin = request.json.get("pin", "")  # Get PIN from request
-
-    if entered_pin == CORRECT_PIN:
-        buzzer.beep(0.5, 0.2, 1)
+    if entered_pin == "8888":  # Correct PIN
         lcd.lcd_clear()
         lcd.lcd_display_string("Payment Approved", 1)
-        time.sleep(8)
-        return True  # Payment Successful
+        time.sleep(2)
+        return True
     else:
         lcd.lcd_clear()
-        lcd.lcd_display_string("Wrong PIN!", 1)
+        lcd.lcd_display_string("Invalid PIN!", 1)
         buzzer.beep(0.5, 0.2, 2)
         time.sleep(2)
-        return False  # Payment Failed
-
+        return False
 # ------------------- CHECKOUT & QR CODE -------------------
 @app.route("/checkout")
 def checkout():
