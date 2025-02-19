@@ -1,136 +1,162 @@
 import time
 from threading import Thread
 import queue
-
-# Import HAL modules
-from hal import hal_led as led
 from hal import hal_lcd as LCD
-from hal import hal_adc as adc
-from hal import hal_buzzer as buzzer
 from hal import hal_keypad as keypad
+from hal import hal_buzzer as buzzer
 from hal import hal_rfid_reader as rfid_reader
-from hal import hal_servo as servo
-from hal import hal_dc_motor as dc_motor
-
-# Import functional modules
 from barcode_scanner import start_barcode_scanner
 from QRcode_scanner import start_qr_code_scanner
+import RPi.GPIO as GPIO
 
-# Shared queue for keypad presses
+# Shared queue for keypad inputs
 shared_keypad_queue = queue.Queue()
 
-# Callback function invoked when a key is pressed
+# Initialize LCD
+lcd = LCD.lcd()
+lcd.lcd_clear()
+
+# Callback function to capture keypad presses
 def key_pressed(key):
     shared_keypad_queue.put(key)
 
-def process_payment(lcd, buzzer, rfid_reader):
-    """Handles payment using RFID only (No PIN fallback)."""
+def process_payment():
+    """Handles payment via RFID or PIN input."""
+    lcd.lcd_clear()
+    lcd.lcd_display_string("1.RFID  2.PIN", 1)
+    
+    key = shared_keypad_queue.get()
+    if key == 1:
+        return process_rfid_payment()
+    elif key == 2:
+        return process_pin_payment()
+    else:
+        lcd.lcd_display_string("Invalid Option!", 1)
+        buzzer.beep(0.5, 0.2, 2)
+        time.sleep(2)
+        return False
+
+def process_rfid_payment():
+    """Handles payment via RFID."""
+    GPIO.setmode(GPIO.BCM)  # Ensure GPIO mode is set
+    GPIO.setup(18, GPIO.OUT)  # Ensure buzzer pin is set 
     lcd.lcd_clear()
     lcd.lcd_display_string("Scan RFID", 1)
-    time.sleep(2)
-
-    # Initialize RFID reader and scan for a card
     reader = rfid_reader.init()
     rfid_id = reader.read_id_no_block()
-
+    
     if rfid_id:
-        rfid_id_str = str(rfid_id).strip()  # Convert to string & remove spaces
         buzzer.beep(0.5, 0.2, 1)
-        print(f"RFID Scanned: {rfid_id_str}")  # Debugging
         lcd.lcd_clear()
         lcd.lcd_display_string("Payment Approved", 1)
-        time.sleep(10)
-        return True  # Payment Successful
+        time.sleep(2)
+        return True
+    else:
+        lcd.lcd_display_string("Payment Failed!", 1)
+        buzzer.beep(0.5, 0.2, 2)
+        time.sleep(2)
+        return False
 
-    # If no RFID is detected
+def process_pin_payment():
+    """Handles payment via PIN input."""
+    GPIO.setmode(GPIO.BCM)  # Ensure GPIO mode is set
+    GPIO.setup(18, GPIO.OUT)  # Ensure buzzer pin is set
     lcd.lcd_clear()
-    lcd.lcd_display_string("Payment Failed!", 1)
-    buzzer.beep(0.5, 0.2, 2)
+    lcd.lcd_display_string("Enter PIN:", 1)
+    entered_pin = ""
+
+    while len(entered_pin) < 4:
+        key = shared_keypad_queue.get()
+        entered_pin += str(key)
+        lcd.lcd_display_string("*" * len(entered_pin), 2)
+    
+    lcd.lcd_display_string("Processing...", 1)
     time.sleep(2)
-    return False
+    
+    if entered_pin == "8888":  # Correct PIN
+        lcd.lcd_clear()
+        lcd.lcd_display_string("Payment Approved", 1)
+        time.sleep(2)
+        return True
+    else:
+        lcd.lcd_display_string("Invalid PIN!", 1)
+        buzzer.beep(0.5, 0.2, 2)
+        time.sleep(2)
+        return False
 
+def print_receipt(item_name, price):
+    """Prints receipt on LCD."""
+    lcd.lcd_clear()
+    lcd.lcd_display_string("Receipt:", 1)
+    lcd.lcd_display_string(f"{item_name}", 2)
+    time.sleep(2)
+    lcd.lcd_display_string(f"Price: ${price}", 2)
+    time.sleep(2)
+    lcd.lcd_display_string("Thank You!", 1)
+    time.sleep(2)
 
+def handle_barcode_purchase():
+    """Handles barcode scanning and payment process."""
+    lcd.lcd_display_string("Scanning Barcode...", 1)
+    barcode_data = start_barcode_scanner()
+    
+    if barcode_data:
+        lcd.lcd_display_string(f"Item: {barcode_data}", 1)
+        lcd.lcd_display_string("Price: $5.00", 2)  # Fixed price for demo
+        time.sleep(2)
+        
+        lcd.lcd_display_string("Proceed to Pay?", 1)
+        lcd.lcd_display_string("1.Yes 2.No", 2)
+        key = shared_keypad_queue.get()
+        
+        if key == 1:
+            if process_payment():
+                print_receipt(barcode_data, "5.00")
+    else:
+        lcd.lcd_display_string("Scan Failed!", 1)
+    time.sleep(2)
+
+def handle_qr_code_verification():
+    """Handles QR Code scanning and payment process."""
+    lcd.lcd_display_string("Scanning QR Code...", 1)
+    order_id = start_qr_code_scanner()
+    
+    if order_id:
+        lcd.lcd_display_string("Order Verified", 1)
+        time.sleep(2)
+        
+        lcd.lcd_display_string("Proceed to Pay?", 1)
+        lcd.lcd_display_string("1.Yes 2.No", 2)
+        key = shared_keypad_queue.get()
+
+        if key == 1:
+            if process_payment():
+                print_receipt("Online Order", "10.00")
+    else:
+        lcd.lcd_display_string("Invalid QR Code!", 1)
+    time.sleep(2)
 
 def main():
-    # Initialize hardware components
-    led.init()
-    adc.init()
-    buzzer.init()
-    rfid_reader.init()
-    servo.init()
-    dc_motor.init()
-    
+    """Main function for self-checkout system."""
     keypad.init(key_pressed)
     keypad_thread = Thread(target=keypad.get_key)
+    keypad_thread.daemon = True
     keypad_thread.start()
 
-    lcd = LCD.lcd()
     lcd.lcd_clear()
-
     lcd.lcd_display_string("Supermarket", 1)
     lcd.lcd_display_string("Self-Checkout", 2)
     time.sleep(3)
 
-    print("Press 1 to Scan Barcode")
-    print("Press 2 to Scan QR Code")
-    print("Press 3 to Process Payment")
-    print("Press 4 to Open Servo (Dispense)")
-    print("Press 5 to Control DC Motor")
-    print("Press * to Exit")
-
     while True:
         lcd.lcd_clear()
-        lcd.lcd_display_string("Select an Option", 1)
-        print("Waiting for key press...")
+        lcd.lcd_display_string("1.Barcode 2.QR", 1)
 
         keyvalue = shared_keypad_queue.get()
-        print(f"Key Pressed: {keyvalue}")
-
         if keyvalue == 1:
-            lcd.lcd_display_string("Scanning Barcode...", 1)
-            barcode_data = start_barcode_scanner()
-            lcd.lcd_display_string(f"Scanned: {barcode_data}" if barcode_data else "Scan Failed!", 2)
-            time.sleep(2)
-
+            handle_barcode_purchase()
         elif keyvalue == 2:
-            lcd.lcd_display_string("Scanning QR Code...", 1)
-            qr_data = start_qr_code_scanner()
-            lcd.lcd_display_string(f"QR Verified: {qr_data}" if qr_data else "Invalid QR Code!", 2)
-            time.sleep(10)
-
-        elif keyvalue == 3:
-            lcd.lcd_display_string("Processing Payment...", 1)
-            payment_status = process_payment(lcd, buzzer, rfid_reader)
-            lcd.lcd_display_string("Payment Success" if payment_status else "PaymentFailed!", 2)
-            time.sleep(2)
-
-        elif keyvalue == 4:
-            lcd.lcd_display_string("Dispensing...", 1)
-            servo.set_servo_position(90)  # Example dispensing angle
-            time.sleep(2)
-            servo.set_servo_position(0)
-            lcd.lcd_display_string("Done!", 2)
-            time.sleep(2)
-
-        elif keyvalue == 5:
-            lcd.lcd_display_string("Controlling Motor...", 1)
-            dc_motor.set_motor_speed(50)  # Adjust motor speed as needed
-            time.sleep(3)
-            dc_motor.set_motor_speed(0)
-            lcd.lcd_display_string("Stopped!", 2)
-            time.sleep(2)
-
-        elif keyvalue == "*":
-            lcd.lcd_clear()
-            lcd.lcd_display_string("Goodbye!", 1)
-            time.sleep(2)
-            break
-
-        else:
-            lcd.lcd_display_string("Invalid Option!", 1)
-            buzzer.beep()
-            time.sleep(1)
+            handle_qr_code_verification()
 
 if __name__ == '__main__':
     main()
-
