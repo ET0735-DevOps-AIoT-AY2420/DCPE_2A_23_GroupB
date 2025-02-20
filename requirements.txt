@@ -1,0 +1,14 @@
+Flask
+pyzbar
+qrcode
+python-telegram-bot
+pytelegrambotapi
+telebot
+pillow
+requests
+python-dotenv
+werkzeug
+Jinja2
+itsdangerous
+simplejpeg
+
